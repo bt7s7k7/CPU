@@ -37,6 +37,8 @@ class CPUState {
 		this.components = makeComponents()
 		this.memory = new Uint8Array(1 << 8);
 		this.bus = 0
+		this.period = 100
+		this.countdown = 0
 	}
 
 	/**
@@ -123,6 +125,20 @@ class CPUState {
 		} else {
 			throw new RangeError("Component named '" + component + "' is not in the CPU")
 		}
+	}
+
+	/**
+	 * @param {number} deltaT
+	 */
+	clock(deltaT) {
+		if (this.countdown > this.period) this.countdown = this.period
+		this.countdown -= deltaT
+		if (this.countdown < 0) {
+			this.countdown = this.period
+			this.tick()
+			return true
+		}
+		return false
 	}
 }
 
