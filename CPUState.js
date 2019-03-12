@@ -1,3 +1,5 @@
+const WORD_SIZE = 1 << 8
+
 /**
  *  @typedef {{in : boolean, out : boolean, reset : boolean, incr : boolean, value : number}} Component
  *  @returns {Object<string, Component>} 
@@ -28,6 +30,11 @@ function makeComponents() {
 			value: 0,
 			in: false,
 			out: false
+		},
+		io: {
+			value: 0,
+			in: false,
+			out: false
 		}
 	}
 }
@@ -35,10 +42,15 @@ function makeComponents() {
 class CPUState {
 	constructor() {
 		this.components = makeComponents()
-		this.memory = new Uint8Array(1 << 8);
+		this.memory = new Uint8Array(WORD_SIZE);
 		this.bus = 0
 		this.period = 100
+		this.clockActive = false
 		this.countdown = 0
+		/** @param {number} value */
+		this.ioOut = (value) => { }
+		/** @returns {number} */
+		this.ioIn = () => 0
 	}
 
 	/**
@@ -122,6 +134,10 @@ class CPUState {
 				set(this.components[component + "_h"])
 			}
 
+		} else if (component == "_") {
+			if (signal == "halt") {
+				this.clockActive = false
+			}
 		} else {
 			throw new RangeError("Component named '" + component + "' is not in the CPU")
 		}
@@ -132,6 +148,7 @@ class CPUState {
 	 */
 	clock(deltaT) {
 		if (this.countdown > this.period) this.countdown = this.period
+		if (!this.clockActive) return false
 		this.countdown -= deltaT
 		if (this.countdown < 0) {
 			this.countdown = this.period
@@ -139,6 +156,14 @@ class CPUState {
 			return true
 		}
 		return false
+	}
+
+	reset() {
+		this.components.toArray().forEach(v => {
+			if ("value" in v.value) {
+				v.value.value = 0
+			}
+		})
 	}
 }
 
@@ -158,7 +183,8 @@ var componentNames = {
 	tick: "Tick Counter",
 	pc: "Program Counter",
 	address: "Address",
-	memory: "Memory"
+	memory: "Memory",
+	io: "I/O"
 }
 
 /** @type {Object<string, (state : CPUState, component : Component)=>void>} */
@@ -166,6 +192,14 @@ var componentFunctions = {
 	memory_in: (state, component) => {
 		state.memory[state.getValue("address")] = state.bus
 		component.value = state.bus
+	},
+	io_out: (state, component) => {
+		component.value = Math.clamp(state.ioIn(), 0, WORD_SIZE)
+		state.bus |= component.value
+	},
+	io_in: (state, component) => {
+		component.value = state.bus
+		state.ioOut(component.value)
 	}
 }
 
@@ -197,7 +231,7 @@ function getComponentFunction(name, sign, state) {
 		if (sign == "incr") {
 			return (state, component) => {
 				component.value++
-				if (component.value > 255) component.value = 0
+				if (component.value >= WORD_SIZE) component.value = 0
 			}
 		}
 	}

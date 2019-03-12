@@ -9,6 +9,16 @@ var INS = {
 	jmp: {
 		code: 1,
 		args: ["#target"]
+	},
+	hlt: {
+		code: 2
+	},
+	cout: {
+		code: 3,
+		args: ["#value"]
+	},
+	aout: {
+		code: 4
 	}
 }
 
@@ -59,6 +69,24 @@ var controller = [
 			],
 			[["pc", "out"], ["address", "in"]],
 			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.hlt.code)],
+		ticks: [
+			[["_", "halt"]],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.cout.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["io", "in"]
+			],
+			...resetTick
 		]
 	}
 ]

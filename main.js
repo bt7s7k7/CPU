@@ -125,7 +125,7 @@ function drawMemory(state, element) {
 			if (valueDisp.value in INS) {
 				inpValue = INS[valueDisp.value].code
 			} else {
-				inpValue = Math.clamp(parseInt(valueDisp.value).notNaN(), 0, 1 << 8)
+				inpValue = Math.clamp(parseInt(valueDisp.value).notNaN(), 0, WORD_SIZE)
 			}
 			state.memory[ii] = inpValue;
 			drawMemory(state, element);

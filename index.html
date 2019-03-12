@@ -31,7 +31,7 @@
 		body {
 			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 		}
-		
+
 		.cname {
 			flex: 1 1
 		}
@@ -44,6 +44,7 @@
 			height: 20px;
 			font-family: 'Lucida Console', monospace;
 		}
+
 			.mparent > input {
 				border: none;
 				height: 20px;
@@ -58,27 +59,26 @@
 	</style>
 	<script>
 		var state = new CPUState()
-		var clock = false
 		var last = Date.now()
 
 		function setup() {
-			state.memory[1] = 1
+			state.ioOut = (num) => {
+				E.output.innerText = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() +  "\n" + E.output.innerText
+			}
 			redraw()
 		}
 
 		function redraw() {
 			drawCPU(state, E.componentPanel)
 			drawMemory(state, E.memoryView)
-			E.busInfo.innerText = state.bus + " 0x" + state.bus.toString(16)  
+			E.busInfo.innerText = state.bus + " 0x" + state.bus.toString(16)
 		}
 
 		function update() {
 			var delta = Date.now() - last
 			last += delta
-			if (clock) {
-				if (state.clock(delta)) {
-					redraw()
-				}
+			if (state.clock(delta)) {
+				redraw()
 			}
 		}
 
@@ -104,9 +104,13 @@
 		<div style="margin-left: 20px">
 			<div style="box-shadow: 0 0 10px grey; padding: 10px">
 				<button onclick="state.tick(); redraw()">&rarr;</button>
-				<button onclick="clock = true">S</button>
-				<button onclick="clock = false">C</button><br />
-				Bus: <span id="busInfo"></span>
+				<button onclick="state.clockActive = true">S</button>
+				<button onclick="state.clockActive = false">C</button>
+				<button onclick="state.reset()">R</button>
+				<br />
+				Bus: <span id="busInfo"></span><br />
+				<textarea id="output" style="width: 200px"></textarea>
+
 			</div>
 		</div>
 	</div>
