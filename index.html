@@ -56,16 +56,39 @@
 		.mtext {
 			white-space: pre;
 		}
+
+		.fparent {
+			height: 20px;
+			display: flex;
+			flex-direction: row;
+		}
+
+		.fbutton {
+			flex: 0 0 20px;
+			background: white;
+		}
 	</style>
 	<script>
 		var state = new CPUState()
 		var last = Date.now()
 
+		/** @type {{working : string, files : Object<string, number[]>}} */
+		var save = {
+			working: null,
+			files: {}
+		}
+
 		function setup() {
+			if ("save" in B.l) {
+				Object.assign(save, B.l.save)
+			}
+			B.l.save = save
 			state.ioOut = (num) => {
 				E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) +  "\n" + E.output.value
 			}
+			if (save.working) state.memory = new Uint8Array(save.files[save.working])
 			redraw()
+			drawFiles()
 		}
 
 		function redraw() {
@@ -90,6 +113,53 @@
 			E.memoryScroll.value = parseInt(E.memoryScroll.value) + delta;
 			drawMemory(state, E.memoryView)
 		}
+
+		function drawFiles() {
+			B.removeChildrenOf(E.files)
+			save.files.toArray().forEach(v => {
+				var name = v.key
+				var parent = document.createElement("div")
+				E.files.appendChild(parent)
+				parent.classList.add("fparent")
+				var loadButton = document.createElement("button")
+				parent.appendChild(loadButton)
+				loadButton.innerText = name
+				loadButton.style.flexGrow = "1"
+				loadButton.addEventListener("click", () => {
+					save.working = name
+					state.memory = new Uint8Array(save.files[name])
+					redraw()
+					drawFiles()
+					B.l.save = save
+				})
+				if (name == save.working) {
+					loadButton.style.backgroundColor = "lightgreen"
+					var saveButton = document.createElement("button")
+					parent.appendChild(saveButton)
+					saveButton.innerText = "S"
+					saveButton.addEventListener("click", () => {
+						saveFile()
+					})
+				}
+
+				var deleteButton = document.createElement("button")
+				parent.appendChild(deleteButton)
+				deleteButton.innerText = "X"
+				deleteButton.addEventListener("click", () => {
+					delete save.files[name]
+					if (save.working == name) save.working = null
+					drawFiles()
+				})
+			})
+		}
+
+		function saveFile(isNew = (save.working == null)) {
+			var name = save.working
+			if (isNew) name = prompt("Program name", "New program");
+			save.files[name] = Array.from(state.memory)
+			save.working = name
+			drawFiles()
+		}
 	</script>
 </head>
 <body style="height: 100vh; margin: 0">
@@ -107,10 +177,13 @@
 				<button onclick="state.clockActive = true">S</button>
 				<button onclick="state.clockActive = false">C</button>
 				<button onclick="state.reset(); redraw()">R</button>
+				<button onclick="state.reset(); state.memory.fill(0); redraw()">RR</button>
 				<br />
 				Bus: <span id="busInfo"></span><br />
-				<textarea id="output" style="width: 200px"></textarea>
-
+				<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
+				<div id="files" style="overflow: auto; height: 500px; border: 1px solid black; width: 100%"></div>
+				<button style="width: 100%" onclick="saveFile()">Save</button>
+				<button style="width: 100%" onclick="saveFile(true)">Save as new</button>
 			</div>
 		</div>
 	</div>
