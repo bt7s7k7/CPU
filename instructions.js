@@ -8,7 +8,7 @@ var INS = {
 	},
 	jmp: {
 		code: 1,
-		args: ["#target_l", "#target_h"]
+		args: ["#target"]
 	}
 }
 
@@ -35,12 +35,11 @@ function valueCriteria(object, value) {
 
 var nextValue = [
 	[["pc", "incr"]],
-	[["pc_l", "out"], ["address_l", "in"]],
-	[["pc_h", "out"], ["address_h", "in"]]
+	[["pc", "out"], ["address", "in"]]
 ]
 var resetTick = [
 	...nextValue,
-	[["memory_l", "out"], ["instruction", "in"], ["tick", "reset"]]
+	[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
 ]
 /** @type {Array<{criteria : Array<(state : CPUState)=>boolean>, ticks: [string,string][][]}>} */
 var controller = [
@@ -55,16 +54,11 @@ var controller = [
 		ticks: [
 			...nextValue,
 			[
-				["memory_l", "out"],
-				["pc_l", "in"]
+				["memory", "out"],
+				["pc", "in"]
 			],
-			[
-				["memory_h", "out"],
-				["pc_h", "in"]
-			],
-			[["pc_l", "out"], ["address_l", "in"]],
-			[["pc_h", "out"], ["address_h", "in"]],
-			[["memory_l", "out"], ["instruction", "in"], ["tick", "reset"]]
+			[["pc", "out"], ["address", "in"]],
+			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
 		]
 	}
 ]

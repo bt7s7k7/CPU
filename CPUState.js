@@ -14,32 +14,17 @@ function makeComponents() {
 			reset: false,
 			incr: false
 		},
-		pc_l: {
+		pc: {
 			value: 0,
 			in: false,
 			incr: false,
 			out: false
 		},
-		pc_h: {
-			value: 0,
-			in: false,
-			incr: false,
-			out: false
-		},
-		address_l: {
+		address: {
 			value: 0,
 			in: false
 		},
-		address_h: {
-			value: 0,
-			in: false
-		},
-		memory_l: {
-			value: 0,
-			in: false,
-			out: false
-		},
-		memory_h: {
+		memory: {
 			value: 0,
 			in: false,
 			out: false
@@ -50,7 +35,7 @@ function makeComponents() {
 class CPUState {
 	constructor() {
 		this.components = makeComponents()
-		this.memory = new Uint8Array(1 << 16);
+		this.memory = new Uint8Array(1 << 8);
 		this.bus = 0
 	}
 
@@ -112,8 +97,7 @@ class CPUState {
 			}
 		})
 
-		this.components.memory_h.value = state.memory[(state.getValue("address") + 1) % (1 << 16)]
-		this.components.memory_l.value = state.memory[state.getValue("address")]
+		this.components.memory.value = state.memory[state.getValue("address")]
 	}
 
 	/**
@@ -163,24 +147,8 @@ var componentNames = {
 
 /** @type {Object<string, (state : CPUState, component : Component)=>void>} */
 var componentFunctions = {
-	pc_l_incr: (state, component) => {
-		component.value++
-		if (component.value > 255) {
-			component.value = 0
-			var ref = state.components["pc_h"]
-			ref.value++
-			if (ref.value > 255) {
-				ref.value = 0
-			}
-		}
-	},
-	pc_h_incr: () => { },
-	memory_l_in: (state, component) => {
+	memory_in: (state, component) => {
 		state.memory[state.getValue("address")] = state.bus
-		component.value = state.bus
-	},
-	memory_l_in: (state, component) => {
-		state.memory[(state.getValue("address") + 1) % (1 << 16)] = state.bus
 		component.value = state.bus
 	}
 }
