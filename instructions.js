@@ -33,9 +33,11 @@ var INS = {
 	xty: { code: 15 },
 	ytx: { code: 16 },
 	loa: { code: 17, args: ["#value"] },
-	lob: { code: 18, args: ["#value"]  },
-	lox: { code: 19, args: ["#value"]  },
-	loy: { code: 20, args: ["#value"]  },
+	lob: { code: 18, args: ["#value"] },
+	lox: { code: 19, args: ["#value"] },
+	loy: { code: 20, args: ["#value"] },
+	sum: { code: 21 },
+	add: { code: 22, args: ["#value"]}
 }
 
 
@@ -105,6 +107,16 @@ var controller = [
 			...resetTick
 		]
 	},
+	{
+		criteria: [valueCriteria("instruction", INS.aout.code)],
+		ticks: [
+			[
+				["a", "out"],
+				["io", "in"]
+			],
+			...resetTick
+		]
+	},
 	{ criteria: [valueCriteria("instruction", INS.atb.code)], ticks: [[["a", "out"], ["b", "in"]], ...resetTick] },
 	{ criteria: [valueCriteria("instruction", INS.bta.code)], ticks: [[["b", "out"], ["a", "in"]], ...resetTick] },
 	{ criteria: [valueCriteria("instruction", INS.atx.code)], ticks: [[["a", "out"], ["x", "in"]], ...resetTick] },
@@ -158,6 +170,25 @@ var controller = [
 				["memory", "out"],
 				["y", "in"]
 			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.sum.code)],
+		ticks: [
+			[["sum", "out"], ["a", "in"]],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.add.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["b", "in"]
+			],
+			[["sum", "out"], ["a", "in"]],
 			...resetTick
 		]
 	}

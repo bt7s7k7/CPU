@@ -63,7 +63,7 @@
 
 		function setup() {
 			state.ioOut = (num) => {
-				E.output.innerText = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) +  "\n" + E.output.innerText
+				E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) +  "\n" + E.output.value
 			}
 			redraw()
 		}

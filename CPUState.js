@@ -212,10 +212,11 @@ var componentNames = {
 	address: "Address",
 	memory: "Memory",
 	io: "I/O",
-	a: "A",
-	b: "B",
-	x: "X",
-	y: "Y"
+	a: "A Register",
+	b: "B Register",
+	x: "X Register",
+	y: "Y Register",
+	sum: "Sum"
 }
 
 /** @type {Object<string, (state : CPUState, component : Component)=>void>} */
