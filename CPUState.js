@@ -35,6 +35,30 @@ function makeComponents() {
 			value: 0,
 			in: false,
 			out: false
+		},
+		a: {
+			value: 0,
+			in: false,
+			out: false
+		},
+		b: {
+			value: 0,
+			in: false,
+			out: false
+		},
+		x: {
+			value: 0,
+			in: false,
+			out: false
+		},
+		y: {
+			value: 0,
+			in: false,
+			out: false
+		},
+		sum: {
+			value: 0,
+			out: false
 		}
 	}
 }
@@ -51,6 +75,8 @@ class CPUState {
 		this.ioOut = (value) => { }
 		/** @returns {number} */
 		this.ioIn = () => 0
+		this.fCarry = false
+		this.fZero = false
 	}
 
 	/**
@@ -111,7 +137,8 @@ class CPUState {
 			}
 		})
 
-		this.components.memory.value = state.memory[state.getValue("address")]
+		this.components.memory.value = this.memory[this.getValue("address")]
+		this.components.sum.value = this.getValue("a") + this.getValue("b")
 	}
 
 	/**
@@ -184,7 +211,11 @@ var componentNames = {
 	pc: "Program Counter",
 	address: "Address",
 	memory: "Memory",
-	io: "I/O"
+	io: "I/O",
+	a: "A",
+	b: "B",
+	x: "X",
+	y: "Y"
 }
 
 /** @type {Object<string, (state : CPUState, component : Component)=>void>} */

@@ -8,7 +8,7 @@ var INS = {
 	},
 	jmp: {
 		code: 1,
-		args: ["#target"]
+		args: ["$target"]
 	},
 	hlt: {
 		code: 2
@@ -19,7 +19,23 @@ var INS = {
 	},
 	aout: {
 		code: 4
-	}
+	},
+	atb: { code: 5 },
+	bta: { code: 6 },
+	atx: { code: 7 },
+	aty: { code: 8 },
+	xta: { code: 9 },
+	yta: { code: 10 },
+	btx: { code: 11 },
+	bty: { code: 12 },
+	xtb: { code: 13 },
+	ytb: { code: 14 },
+	xty: { code: 15 },
+	ytx: { code: 16 },
+	loa: { code: 17, args: ["#value"] },
+	lob: { code: 18, args: ["#value"]  },
+	lox: { code: 19, args: ["#value"]  },
+	loy: { code: 20, args: ["#value"]  },
 }
 
 
@@ -85,6 +101,62 @@ var controller = [
 			[
 				["memory", "out"],
 				["io", "in"]
+			],
+			...resetTick
+		]
+	},
+	{ criteria: [valueCriteria("instruction", INS.atb.code)], ticks: [[["a", "out"], ["b", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.bta.code)], ticks: [[["b", "out"], ["a", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.atx.code)], ticks: [[["a", "out"], ["x", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.xta.code)], ticks: [[["x", "out"], ["a", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.aty.code)], ticks: [[["a", "out"], ["y", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.yta.code)], ticks: [[["y", "out"], ["a", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.btx.code)], ticks: [[["b", "out"], ["x", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.xtb.code)], ticks: [[["x", "out"], ["b", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.bty.code)], ticks: [[["b", "out"], ["y", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.ytb.code)], ticks: [[["y", "out"], ["b", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.xty.code)], ticks: [[["x", "out"], ["y", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.ytx.code)], ticks: [[["y", "out"], ["x", "in"]], ...resetTick] },
+	{
+		criteria: [valueCriteria("instruction", INS.loa.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["a", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.lob.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["b", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.lox.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["x", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.loy.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["y", "in"]
 			],
 			...resetTick
 		]
