@@ -89,12 +89,14 @@
 			if (save.working) state.memory = new Uint8Array(save.files[save.working])
 			redraw()
 			drawFiles()
+			window.addEventListener("resize", ()=>redraw())
 		}
 
 		function redraw() {
 			drawCPU(state, E.componentPanel)
 			drawMemory(state, E.memoryView)
 			E.busInfo.innerText = state.bus + " 0x" + state.bus.toString(16)
+			E.flagsInfo.innerText = "C: " + state.fCarry + " Z: " + state.fZero
 		}
 
 		function update() {
@@ -166,10 +168,10 @@
 	<div style="display: flex; flex-direction: row;height: 100%; padding: 10px; box-sizing: border-box">
 		<div style="flex: 0 1 215px; max-width: 215px; box-shadow: 0 0 10px grey; padding: 10px; overflow: auto" id="componentPanel"></div>
 		<div style="margin-left: 20px; box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column">
-			<div style="flex: 1 1; width: 500px; overflow: auto" id="memoryView" onmousewheel="scrollMemoryView(event)">
+			<div style="flex: 1 1; width: 500px; overflow: auto" id="memoryView" onmousewheel="//scrollMemoryView(event)">
 
 			</div>
-			<input type="range" min="0" max="255" step="1" value="0" style="width: 100%; flex: 0 0 20px; font: monospace" oninput="drawMemory(state, E.memoryView)" id="memoryScroll" />
+			<!--<input type="range" min="0" max="255" step="1" value="0" style="width: 100%; flex: 0 0 20px; font: monospace" oninput="drawMemory(state, E.memoryView)" id="memoryScroll" />-->
 		</div>
 		<div style="margin-left: 20px">
 			<div style="box-shadow: 0 0 10px grey; padding: 10px">
@@ -178,8 +180,10 @@
 				<button onclick="state.clockActive = false">C</button>
 				<button onclick="state.reset(); redraw()">R</button>
 				<button onclick="state.reset(); state.memory.fill(0); redraw()">RR</button>
+				<input type="number" style="width: 40px" onchange="state.period = parseInt(this.value).notNaN()" value="100"/>
 				<br />
 				Bus: <span id="busInfo"></span><br />
+				Flags: <span id="flagsInfo"></span><br />
 				<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
 				<div id="files" style="overflow: auto; height: 500px; border: 1px solid black; width: 100%"></div>
 				<button style="width: 100%" onclick="saveFile()">Save</button>

@@ -37,18 +37,25 @@ var INS = {
 	lox: { code: 19, args: ["#value"] },
 	loy: { code: 20, args: ["#value"] },
 	sum: { code: 21 },
-	add: { code: 22, args: ["#value"]}
+	add: { code: 22, args: ["#value"] },
+	rsb: { code: 23 },
+	jpz: { code: 24, args: ["$target"] },
+	jnz: { code: 25, args: ["$target"] },
+	jpc: { code: 26, args: ["$target"] },
+	jnc: { code: 27, args: ["$target"] }
 }
 
 
 /** @type {Object<string, InstructionDef>} */
 var instructionLookup = {}
-
-INS.toArray().forEach((v) => {
-	v.value.name = v.key
-	if (!("args" in v.value)) v.value.args = []
-	instructionLookup[v.value.code] = v.value
-})
+{
+	INS.toArray().forEach((v, i) => {
+		v.value.name = v.key
+		if (!("args" in v.value)) v.value.args = []
+		if (instructionLookup[v.value.code]) throw new RangeError("Instruction " + v.value.name + " has a duplicate code")
+		instructionLookup[v.value.code] = v.value
+	})
+}
 
 /**
  * @param {string} object
@@ -56,6 +63,7 @@ INS.toArray().forEach((v) => {
  * @returns {(state : CPUState)=>boolean}
  */
 function valueCriteria(object, value) {
+	if (typeof value != "number") throw new TypeError("Value must be a number")
 	return (state) => {
 		return state.getValue(object) == value;
 	}
@@ -129,6 +137,7 @@ var controller = [
 	{ criteria: [valueCriteria("instruction", INS.ytb.code)], ticks: [[["y", "out"], ["b", "in"]], ...resetTick] },
 	{ criteria: [valueCriteria("instruction", INS.xty.code)], ticks: [[["x", "out"], ["y", "in"]], ...resetTick] },
 	{ criteria: [valueCriteria("instruction", INS.ytx.code)], ticks: [[["y", "out"], ["x", "in"]], ...resetTick] },
+	{ criteria: [valueCriteria("instruction", INS.rsb.code)], ticks: [[["b", "in"]], ...resetTick] },
 	{
 		criteria: [valueCriteria("instruction", INS.loa.code)],
 		ticks: [
@@ -189,6 +198,82 @@ var controller = [
 				["b", "in"]
 			],
 			[["sum", "out"], ["a", "in"]],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.jpz.code), (state) => state.fZero],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["pc", "in"]
+			],
+			[["pc", "out"], ["address", "in"]],
+			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
+		]
+	},
+	{ // 25
+		criteria: [valueCriteria("instruction", INS.jnz.code), (state) => !state.fZero],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["pc", "in"]
+			],
+			[["pc", "out"], ["address", "in"]],
+			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
+		]
+	},
+	{ // 26
+		criteria: [valueCriteria("instruction", INS.jpc.code), (state) => state.fCarry],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["pc", "in"]
+			],
+			[["pc", "out"], ["address", "in"]],
+			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.jnc.code), (state) => !state.fCarry],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["pc", "in"]
+			],
+			[["pc", "out"], ["address", "in"]],
+			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.jpz.code), (state) => !state.fZero],
+		ticks: [
+			...nextValue,
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.jnz.code), (state) => state.fZero],
+		ticks: [
+			...nextValue,
+			...resetTick
+		]
+	},
+	{ // 30
+		criteria: [valueCriteria("instruction", INS.jpc.code), (state) => !state.fCarry],
+		ticks: [
+			...nextValue,
+			...resetTick
+		]
+	},
+	{ // 31
+		criteria: [valueCriteria("instruction", INS.jnc.code), (state) => state.fCarry],
+		ticks: [
+			...nextValue,
 			...resetTick
 		]
 	}

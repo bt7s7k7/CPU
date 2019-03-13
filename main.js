@@ -89,38 +89,72 @@ function drawCPU(state, element) {
 	})
 }
 
+
+/** @type {Array<{address : HTMLElement, colon : HTMLElement, valueDisp : HTMLInputElement, listener : any, comment : HTMLElement}>} */
+var memoryElements = null
 /**
  * @param {CPUState} state
  * @param {HTMLElement} element
  */
 function drawMemory(state, element) {
-	B.removeChildrenOf(E.memoryView)
-	var linesFit = Math.floor((E.memoryView.getSize()[1]) / 20)
-	var beginLine = parseInt(E.memoryScroll.value);
+	var linesFit = state.memory.length//Math.floor((E.memoryView.getSize()[1]) / 20)
+	var beginLine = 0//parseInt(E.memoryScroll.value);
 	var endLine = Math.clamp(beginLine + linesFit, 0, state.memory.length)
 	var argCountDown = []
+	if (memoryElements && linesFit != memoryElements.length) memoryElements = null
+	if (memoryElements == null) {
+		B.removeChildrenOf(E.memoryView)
+		memoryElements = []
+		for (var i = beginLine; i < endLine; i++) {
+			let entry = {}
+			let ii = i
+			let value = state.memory[i]
+			let parent = document.createElement("div")
+			element.appendChild(parent)
+			parent.classList.add("mparent")
+			let address = document.createElement("span")
+			parent.appendChild(address)
+			address.classList.add("mtext")
+			address.style.color = "blue"
+			entry.address = address
+
+			let colon = document.createElement("span")
+			parent.appendChild(colon)
+			colon.classList.add("mtext")
+			colon.style.color = "black"
+			colon.appendChild(document.createTextNode(": "))
+			entry.colon = colon
+
+			let valueDisp = document.createElement("input")
+			parent.appendChild(valueDisp)
+			entry.valueDisp = valueDisp
+
+			let comment = document.createElement("span")
+			parent.appendChild(comment)
+			comment.classList.add("mtext")
+			comment.style.color = "green"
+			entry.comment = comment
+
+
+			memoryElements.push(entry);
+		}
+	}
+	var iii = 0;
 	for (var i = beginLine; i < endLine; i++) {
+		let entry = memoryElements[iii]
 		let ii = i
 		let value = state.memory[i]
-		let parent = document.createElement("div")
-		element.appendChild(parent)
-		parent.classList.add("mparent")
-		let address = document.createElement("span")
-		parent.appendChild(address)
-		address.classList.add("mtext")
-		address.style.color = "blue"
-		address.appendChild(document.createTextNode(i.toString(16).fillZeroPrefix(4)))
+
+		let address = entry.address
+		address.innerText = i.toString(16).fillZeroPrefix(4)
 		address.style.background = i == state.getValue("pc") ? "gold" : "white"
-		let colon = document.createElement("span")
-		parent.appendChild(colon)
-		colon.classList.add("mtext")
-		colon.style.color = "black"
-		colon.style.backgroundColor = i == state.getValue("address") ? "lightgreen" : "white"
-		colon.appendChild(document.createTextNode(": "))
-		let valueDisp = document.createElement("input")
-		parent.appendChild(valueDisp)
+
+		entry.colon.style.backgroundColor = i == state.getValue("address") ? "lightgreen" : "white"
+
+		let valueDisp = entry.valueDisp
 		valueDisp.value = value
-		valueDisp.addEventListener("change", () => {
+		if (entry.listener) valueDisp.removeEventListener("change", entry.listener)
+		entry.listener = () => {
 			var inpValue = value;
 			if (valueDisp.value in INS) {
 				inpValue = INS[valueDisp.value].code
@@ -129,11 +163,9 @@ function drawMemory(state, element) {
 			}
 			state.memory[ii] = inpValue;
 			drawMemory(state, element);
-		})
-		let comment = document.createElement("span")
-		parent.appendChild(comment)
-		comment.classList.add("mtext")
-		comment.style.color = "green"
+		}
+		valueDisp.addEventListener("change", entry.listener)
+
 		let text = ""
 		if (argCountDown.length > 0) {
 			let arg = argCountDown.splice(0, 1)[0];
@@ -149,8 +181,8 @@ function drawMemory(state, element) {
 				argCountDown = instr.args.copy();
 			}
 		}
-		comment.appendChild(document.createTextNode(text))
+		entry.comment.innerText = text
 
-
+		iii++;
 	}
 }

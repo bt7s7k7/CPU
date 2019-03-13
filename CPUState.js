@@ -102,7 +102,7 @@ class CPUState {
 				}
 			})
 		})
-		controller.forEach(v => {
+		controller.forEach((v, ii) => {
 			var match = true
 			for (let i = 0; i < v.criteria.length; i++) {
 				if (!v.criteria[i](this)) {
@@ -112,6 +112,7 @@ class CPUState {
 			}
 			if (match) {
 				if (v.ticks.length > tick) {
+					//console.log("Executing " + ii, v, " tick:", tick, v.ticks[tick])
 					v.ticks[tick].forEach(v => this.signal(v[0], v[1]))
 				}
 			}
@@ -138,7 +139,7 @@ class CPUState {
 		})
 
 		this.components.memory.value = this.memory[this.getValue("address")]
-		this.components.sum.value = this.getValue("a") + this.getValue("b")
+		
 	}
 
 	/**
@@ -191,6 +192,8 @@ class CPUState {
 				v.value.value = 0
 			}
 		})
+
+		this.fCarry = this.fZero = false
 	}
 }
 
@@ -232,6 +235,15 @@ var componentFunctions = {
 	io_in: (state, component) => {
 		component.value = state.bus
 		state.ioOut(component.value)
+	},
+	sum_out: (state, component) => {
+		var value = state.getValue("a") + state.getValue("b")
+		if (value >= WORD_SIZE) {
+			value %= WORD_SIZE;
+			state.fCarry = true
+		} else state.fCarry = false;
+		state.fZero = value == 0
+		state.bus |= component.value = value
 	}
 }
 
