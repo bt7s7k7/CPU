@@ -8,6 +8,7 @@
 	<script src="./CPUState.js"></script>
 	<script src="./main.js"></script>
 	<script src="./instructions.js"></script>
+	<script src="./compiler.js"></script>
 	<title>CPU</title>
 	<style>
 		.indicator {
@@ -72,7 +73,7 @@
 		var state = new CPUState()
 		var last = Date.now()
 
-		/** @type {{working : string, files : Object<string, number[]>}} */
+		/** @type {{working : string, files : Object<string, [number[], string]>}} */
 		var save = {
 			working: null,
 			files: {}
@@ -84,9 +85,17 @@
 			}
 			B.l.save = save
 			state.ioOut = (num) => {
-				E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) +  "\n" + E.output.value
+				E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) + "\n" + E.output.value
 			}
-			if (save.working) state.memory = new Uint8Array(save.files[save.working])
+			save.files.toArray().forEach(v => {
+				if (typeof v.value[0] == "number") {
+					save.files[v.key] = [v.value, ""]
+				}
+			})
+			if (save.working) {
+				state.memory = new Uint8Array(save.files[save.working][0])
+				E.code.value = save.files[save.working][1]
+			}
 			redraw()
 			drawFiles()
 			window.addEventListener("resize", ()=>redraw())
@@ -129,7 +138,8 @@
 				loadButton.style.flexGrow = "1"
 				loadButton.addEventListener("click", () => {
 					save.working = name
-					state.memory = new Uint8Array(save.files[name])
+					state.memory = new Uint8Array(save.files[name][0])
+					E.code.value = save.files[name][1]
 					redraw()
 					drawFiles()
 					B.l.save = save
@@ -158,10 +168,12 @@
 		function saveFile(isNew = (save.working == null)) {
 			var name = save.working
 			if (isNew) name = prompt("Program name", "New program");
-			save.files[name] = Array.from(state.memory)
+			save.files[name] = [Array.from(state.memory), E.code.value]
 			save.working = name
 			drawFiles()
 		}
+
+		
 	</script>
 </head>
 <body style="height: 100vh; margin: 0">
@@ -173,22 +185,27 @@
 			</div>
 			<!--<input type="range" min="0" max="255" step="1" value="0" style="width: 100%; flex: 0 0 20px; font: monospace" oninput="drawMemory(state, E.memoryView)" id="memoryScroll" />-->
 		</div>
-		<div style="margin-left: 20px">
-			<div style="box-shadow: 0 0 10px grey; padding: 10px">
+		<div style="margin-left: 20px;box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column; flex: 0 1 200px">
+			<div>
 				<button onclick="state.tick(); redraw()">&rarr;</button>
 				<button onclick="state.clockActive = true">S</button>
 				<button onclick="state.clockActive = false">C</button>
 				<button onclick="state.reset(); redraw()">R</button>
 				<button onclick="state.reset(); state.memory.fill(0); redraw()">RR</button>
-				<input type="number" style="width: 40px" onchange="state.period = parseInt(this.value).notNaN()" value="100"/>
-				<br />
+				<input type="number" style="width: 40px" onchange="state.period = parseInt(this.value).notNaN()" value="100" />
+			</div>
+			<div>
 				Bus: <span id="busInfo"></span><br />
 				Flags: <span id="flagsInfo"></span><br />
-				<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
-				<div id="files" style="overflow: auto; height: 500px; border: 1px solid black; width: 100%"></div>
-				<button style="width: 100%" onclick="saveFile()">Save</button>
-				<button style="width: 100%" onclick="saveFile(true)">Save as new</button>
 			</div>
+			<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
+			<div id="files" style="overflow: auto; height: 500px; border: 1px solid black; width: 100%; flex: 1 1"></div>
+			<button style="width: 100%" onclick="saveFile()">Save</button>
+			<button style="width: 100%" onclick="saveFile(true)">Save as new</button>
+		</div>
+		<div style="margin-left: 20px; box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column; flex: 0 1 400px">
+			<textarea style="resize: none; flex: 1 1; margin-bottom: 10px" id="code"></textarea>
+			<button onclick="compile(state, E.code.value); redraw()" style="flex: 0 0 20px; width: 100%">Compile</button>
 		</div>
 	</div>
 </body>
