@@ -156,10 +156,13 @@ function drawMemory(state, element) {
 		if (entry.listener) valueDisp.removeEventListener("change", entry.listener)
 		entry.listener = () => {
 			var inpValue = value;
-			if (valueDisp.value in INS) {
-				inpValue = INS[valueDisp.value].code
+            const text = valueDisp.value;
+			if (text.toLowerCase() in INS) {
+				inpValue = INS[text.toLowerCase()].code
+			} else if (text[0] == "'" && text.length == 2) {
+				inpValue = text.charCodeAt(1) % WORD_SIZE
 			} else {
-				inpValue = Math.clamp(parseInt(valueDisp.value).notNaN(), 0, WORD_SIZE)
+				inpValue = Math.clamp(parseInt(text).notNaN(), 0, WORD_SIZE)
 			}
 			state.memory[ii] = inpValue;
 			drawMemory(state, element);
@@ -169,15 +172,15 @@ function drawMemory(state, element) {
 		let text = ""
 		if (argCountDown.length > 0) {
 			let arg = argCountDown.splice(0, 1)[0];
-			text += ";  " + arg + " 0x" + value.toString(16)
+			text += ";  " + arg + " 0x" + value.toString(16) + JSON.stringify(String.fromCharCode(value))
 			if (arg.split("_")[1] == "h") {
 				let low = state.memory[i - 1]
-				text += " = " + (low + (value << 8)) + " 0x" + (low + (value << 8)).toString(16)
+				text += " = " + (low + (value << 8)) + " 0x" + (low + (value << 8)).toString(16) + JSON.stringify(String.fromCharCode(value))
 			}
 		} else {
 			if (value in instructionLookup) {
 				let instr = instructionLookup[value]
-				text += "; " + instr.name
+				text += "; " + instr.name.toUpperCase()
 				argCountDown = instr.args.copy();
 			}
 		}
