@@ -48,7 +48,8 @@ var INS = {
 	ldd: { code: 30 },
 	set: { code: 31 },
 	inp: { code: 32 },
-	jpa: { code: 33 }
+	jpa: { code: 33 },
+	cnst: { code: 34 }
 }
 
 
@@ -348,6 +349,23 @@ var controller = [
 			],
 			[["pc", "out"], ["address", "in"]],
 			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.cnst.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["a", "in"]
+			],
+			...nextValue,
+			[
+				["memory", "out"],
+				["address", "in"]
+			],
+			[["memory", "in"], ["a", "out"]],
+			...resetTick
 		]
 	},
 ]
