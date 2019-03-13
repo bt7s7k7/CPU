@@ -3,7 +3,8 @@
 /**
  * @param {CPUState} state
  * @param {string} codeText
- * @returns {Object<string, number>}
+ * @typedef {{values : Object<number, {name : string, size : number}>, points : Object<number, string>, codeEnd : number}} DebugDatabase
+ * @returns {DebugDatabase}
  */
 function compile(state, codeText) {
 	var code = codeText.split("")
@@ -18,6 +19,8 @@ function compile(state, codeText) {
 	var currString = null
 	/** @type {Object<string, {name: string}>} */
 	var variables = {}
+	/** @type {DebugDatabase} */
+	var ret = { points: {}, values: {}}
 
 	/**
 	 * @returns {number}
@@ -57,7 +60,7 @@ function compile(state, codeText) {
 			if (c == " " || c == "\n" || c == "\r") {
 			} else if (c == "\"") {
 				isString = true
-				currString = { name: "__" + strings.length, chars: [] }
+				currString = { name: "s" + strings.length, chars: [] }
 				strings.push(currString)
 				ast.push({ value: -1, label: currString.name, start: i })
 			} else if (c == "/") {
@@ -69,9 +72,9 @@ function compile(state, codeText) {
 				let word = code.slice(i, wordEnd).join("")
 				if (word[0] == ":") {
 					if (word[1] == ":") {
-						label = word.substr(2)
+						label = word.substr(1)
 					} else {
-						ast.push({ value: -1, label: word.substr(1), start: i })
+						ast.push({ value: -1, label: word, start: i })
 					}
 				} else if (word[0] == "'" && word.length == 2) {
 					let char = word.charCodeAt(1)
@@ -80,10 +83,10 @@ function compile(state, codeText) {
 					}
 					ast.push({ value: char, label: label, start: i })
 				} else if (word[0] == "$") {
-					let variableName = word.substr(1)
+					let variableName = word
 					let variable = variables[variableName]
 					if (!variable) {
-						variable = { name: "___" + variableName, chars: [0] }
+						variable = { name: variableName, chars: [0] }
 						variables[variableName] = variable
 						strings.push(variable)
 					}
@@ -107,6 +110,8 @@ function compile(state, codeText) {
 	}
 	/** @type {Object<string, number>} */
 	var labels = {}
+
+	ret.codeEnd = ast.length + 1
 
 	strings.forEach(v => {
 		var label = v.name
@@ -137,5 +142,12 @@ function compile(state, codeText) {
 		state.memory[i + 1] = v.value
 	})
 
-	return labels
+	labels.toArray().forEach(v => {
+		ret.points[v.value] = v.key
+	})
+	strings.forEach(v => {
+		ret.values[labels[v.name]] = {name: v.name, size: v.chars.length}
+	})
+
+	return ret
 }

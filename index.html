@@ -44,6 +44,8 @@
 		.mparent {
 			height: 20px;
 			font-family: 'Lucida Console', monospace;
+			border-bottom: 1px solid lightgrey;
+			text-wrap: none;
 		}
 
 			.mparent > input {
@@ -56,6 +58,7 @@
 
 		.mtext {
 			white-space: pre;
+			text-wrap: none;
 		}
 
 		.fparent {
@@ -185,7 +188,7 @@
 		}
 
 		function doCode() {
-			console.log(compile(state, E.code.value))
+			debugDatabase = compile(state, E.code.value)
 
 			redraw()
 		}
@@ -226,7 +229,7 @@
 		<div style="margin-left: 20px; box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column; flex: 0 1">
 			<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
 			<textarea id="outputText" style="width: 200px; height: 200px; resize: vertical"></textarea>
-			<input style="flex: 0 0 20px; width: 100%" id="input"/>
+			<input style="flex: 0 0 20px; width: 100%" id="input" />
 		</div>
 	</div>
 </body>
