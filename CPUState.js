@@ -59,6 +59,10 @@ function makeComponents() {
 		sum: {
 			value: 0,
 			out: false
+		},
+		sub: {
+			value: 0,
+			out: false
 		}
 	}
 }
@@ -222,7 +226,8 @@ var componentNames = {
 	b: "B Register",
 	x: "X Register",
 	y: "Y Register",
-	sum: "Sum"
+	sum: "Adder",
+	sub: "Substractor"
 }
 
 /** @type {Object<string, (state : CPUState, component : Component)=>void>} */
@@ -247,6 +252,15 @@ var componentFunctions = {
 		var value = state.getValue("a") + state.getValue("b")
 		if (value >= WORD_SIZE) {
 			value %= WORD_SIZE;
+			state.fCarry = true
+		} else state.fCarry = false;
+		state.fZero = value == 0
+		state.bus |= component.value = value
+	},
+	sub_out: (state, component) => {
+		var value = state.getValue("a") - state.getValue("b")
+		if (value < 0) {
+			value = WORD_SIZE + value;
 			state.fCarry = true
 		} else state.fCarry = false;
 		state.fZero = value == 0

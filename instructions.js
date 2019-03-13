@@ -50,7 +50,9 @@ var INS = {
 	inp: { code: 32 },
 	jpa: { code: 33 },
 	cnst: { code: 34, args: ["#value", "$address"] },
-	mov: { code: 35, args: ["$source", "$target"] }
+	mov: { code: 35, args: ["$source", "$target"] },
+	sub: { code: 36 },
+	rem: { code: 37, args: ["#value"]}
 }
 
 
@@ -380,5 +382,24 @@ var controller = [
 			[["memory", "in"], ["a", "out"]],
 			...resetTick
 		]
-	}
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.sub.code)],
+		ticks: [
+			[["sub", "out"], ["a", "in"]],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.rem.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["b", "in"]
+			],
+			[["sub", "out"], ["a", "in"]],
+			...resetTick
+		]
+	},
 ]
