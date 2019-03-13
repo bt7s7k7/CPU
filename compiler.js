@@ -11,6 +11,12 @@ function compile(state, codeText) {
 	/** @type {string} */
 	var label = null
 	var isString = false
+	/** @type {Array<{name : string, chars : number[]}>} */
+	var strings = []
+	/** @type {{name : string, chars : number[]}} */
+	var currString = null
+	/** @type {Object<string, {name: string}>} */
+	var variables = {}
 
 	/**
 	 * @returns {number}
@@ -30,18 +36,28 @@ function compile(state, codeText) {
 			if (c == "\"") {
 				isString = false
 			} else {
-				let code = c.charCodeAt(0)
-				if (code > WORD_SIZE) {
-					code = 255
+				if (c == "\\") {
+					i++
+					let h = code[i]
+					i++
+					let l = code[i]
+					let char = (parseInt(h, 16).notNaN() << 4) + parseInt(l, 16).notNaN()
+					currString.chars.push(char)
+				} else {
+					let code = c.charCodeAt(0)
+					if (code > WORD_SIZE) {
+						code = 255
+					}
+					currString.chars.push(code)
 				}
-				ast.push({ value: code, label, start: i })
-				label = null
 			}
 		} else {
 			if (c == " " || c == "\n" || c == "\r") {
-
 			} else if (c == "\"") {
 				isString = true
+				currString = { name: "__" + strings.length, chars: [] }
+				strings.push(currString)
+				ast.push({ value: -1, label: currString.name, start: i })
 			} else if (c == "/") {
 				let oldI = i
 				i = code.indexOf("/", i + 1)
@@ -53,17 +69,32 @@ function compile(state, codeText) {
 					if (word[1] == ":") {
 						label = word.substr(2)
 					} else {
-						ast.push({ value: -1, label: word.substr(1), start: i  })
+						ast.push({ value: -1, label: word.substr(1), start: i })
 					}
+				} else if (word[0] == "'" && word.length == 2) {
+					let char = word.charCodeAt(1)
+					if (char > WORD_SIZE) {
+						char = 255
+					}
+					ast.push({ value: char, label: label, start: i })
+				} else if (word[0] == "$") {
+					let variableName = word.substr(1)
+					let variable = variables[variableName]
+					if (!variable) {
+						variable = { name: "___" + variableName, chars: [0] }
+						variables[variableName] = variable
+						strings.push(variable)
+					}
+					ast.push({value: -1, label: variable.name, start: i})
 				} else {
 					if (word.toLowerCase() in INS) {
 						let ins = INS[word.toLowerCase()]
-						ast.push({ value: ins.code, label: label, start: i  })
+						ast.push({ value: ins.code, label: label, start: i })
 						label = null
 					} else {
 						var number = parseInt(word)
 						if (isNaN(number)) {
-						} else ast.push({ value: Math.clamp(number.notNaN(), 0, WORD_SIZE), label: label, start: i  })
+						} else ast.push({ value: Math.clamp(number.notNaN(), 0, WORD_SIZE), label: label, start: i })
 						label = null
 					}
 				}
@@ -74,6 +105,14 @@ function compile(state, codeText) {
 	}
 	/** @type {Object<string, number>} */
 	var labels = {}
+
+	strings.forEach(v => {
+		var label = v.name
+		v.chars.forEach(v => {
+			ast.push({ value: v, label: label, start: 0 })
+			label = null
+		})
+	})
 
 	ast.forEach((v, i) => {
 		if (v.value >= 0 && v.label) {
@@ -86,7 +125,7 @@ function compile(state, codeText) {
 			if (v.label in labels) {
 				v.value = labels[v.label]
 			} else {
-				
+
 			}
 		}
 	})

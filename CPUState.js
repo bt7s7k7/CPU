@@ -182,6 +182,7 @@ class CPUState {
 			while (this.countdown < 0) {
 				this.countdown += this.period
 				this.tick()
+				if (!this.clockActive) break
 			}
 			return true
 		}

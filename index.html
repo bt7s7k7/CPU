@@ -195,9 +195,9 @@
 				<button onclick="state.tick(); redraw()">&rarr;</button>
 				<button onclick="state.clockActive = true">S</button>
 				<button onclick="state.clockActive = false">C</button>
-				<button onclick="state.reset(); redraw()">R</button>
-				<button onclick="state.reset(); state.memory.fill(0); redraw()">RR</button>
-				<input type="number" style="width: 40px" onchange="state.period = parseInt(this.value).notNaN()" value="100" />
+				<button onclick="state.reset(); E.output.value = ''; E.outputText.value = ''; redraw()">R</button>
+				<button onclick="state.reset(); E.output.value = ''; E.outputText.value = ''; state.memory.fill(0); redraw()">RR</button>
+				<input type="number" style="width: 40px" onchange="state.period = Math.clamp(parseFloat(this.value).notNaN(), 0.01, Infinity)" value="100" />
 			</div>
 			<div>
 				Bus: <span id="busInfo"></span><br />
