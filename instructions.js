@@ -46,7 +46,8 @@ var INS = {
 	rrd: { code: 28, args: ["$address"] },
 	wrt: { code: 29, args: ["$address"] },
 	ldd: { code: 30 },
-	set: { code: 31 }
+	set: { code: 31 },
+	inp: { code: 32 }
 }
 
 
@@ -327,4 +328,14 @@ var controller = [
 			...resetTick
 		]
 	},
+	{
+		criteria: [valueCriteria("instruction", INS.inp.code)],
+		ticks: [
+			[
+				["a", "in"],
+				["io", "out"]
+			],
+			...resetTick
+		]
+	}
 ]

@@ -88,6 +88,15 @@
 				E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) + "\n" + E.output.value
 				E.outputText.value += String.fromCharCode(num);
 			}
+			state.ioIn = () => {
+				if (E.input.value.length > 0) {
+					var char = E.input.value.charCodeAt(0)
+					E.input.value = E.input.value.substr(1)
+
+					if (char > WORD_SIZE) char = 255
+					return char
+				} else return 0
+			}
 			save.files.toArray().forEach(v => {
 				if (typeof v.value[0] == "number") {
 					save.files[v.key] = [v.value, ""]
@@ -203,9 +212,9 @@
 				Bus: <span id="busInfo"></span><br />
 				Flags: <span id="flagsInfo"></span><br />
 			</div>
-			<div id="files" style="overflow: auto; height: 500px; border: 1px solid black; width: 100%; flex: 1 1"></div>
 			<button style="width: 100%" onclick="saveFile()">Save</button>
 			<button style="width: 100%" onclick="saveFile(true)">Save as new</button>
+			<div id="files" style="overflow: auto; height: 500px; border: 1px solid black; width: 100%; flex: 1 1"></div>
 		</div>
 		<div style="margin-left: 20px; box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column; flex: 0 1 400px">
 			<div style="flex: 1 1; margin-bottom: 10px; position: relative">
@@ -216,6 +225,7 @@
 		<div style="margin-left: 20px; box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column; flex: 0 1">
 			<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
 			<textarea id="outputText" style="width: 200px; height: 200px; resize: vertical"></textarea>
+			<input style="flex: 0 0 20px; width: 100%" id="input"/>
 		</div>
 	</div>
 </body>
