@@ -49,7 +49,8 @@ var INS = {
 	set: { code: 31 },
 	inp: { code: 32 },
 	jpa: { code: 33 },
-	cnst: { code: 34, args: ["#value", "$address"] }
+	cnst: { code: 34, args: ["#value", "$address"] },
+	mov: { code: 35, args: ["$source", "$target"] }
 }
 
 
@@ -368,4 +369,16 @@ var controller = [
 			...resetTick
 		]
 	},
+	{
+		criteria: [valueCriteria("instruction", INS.mov.code)],
+		ticks: [
+			...nextValue,
+			[["memory", "out"], ["address", "in"]],
+			[["memory", "out"], ["a", "in"]],
+			...nextValue,
+			[["memory", "out"], ["address", "in"]],
+			[["memory", "in"], ["a", "out"]],
+			...resetTick
+		]
+	}
 ]
