@@ -140,13 +140,14 @@ function drawMemory(state, element) {
 		}
 	}
 	var iii = 0;
+	var addressLen = (WORD_SIZE - 1).toString(16).length
 	for (var i = beginLine; i < endLine; i++) {
 		let entry = memoryElements[iii]
 		let ii = i
 		let value = state.memory[i]
 
 		let address = entry.address
-		address.innerText = i.toString(16).fillZeroPrefix(4)
+		address.innerText = i.toString(16).fillZeroPrefix(addressLen)
 		address.style.background = i == state.getValue("pc") ? "gold" : "white"
 
 		entry.colon.style.backgroundColor = i == state.getValue("address") ? "lightgreen" : "white"
