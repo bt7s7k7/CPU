@@ -206,8 +206,10 @@ function drawMemory(state, element) {
 			} else {
 				if (i in debugDatabase.values) {
 					text += "; " + debugDatabase.values[i].name
-					lastValue = { ...debugDatabase.values[i] }
-					lastValue.size--
+					if (debugDatabase.values[i].size > 1) {
+						lastValue = { ...debugDatabase.values[i] }
+						lastValue.size--
+					}
 				}
 			}
 

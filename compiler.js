@@ -83,10 +83,11 @@ function compile(state, codeText) {
 					}
 					ast.push({ value: char, label: label, start: i })
 				} else if (word[0] == "$") {
-					let variableName = word
+					let [variableName, size] = word.split("[")
+					if (!size) size = "1"
 					let variable = variables[variableName]
 					if (!variable) {
-						variable = { name: variableName, chars: [0] }
+						variable = { name: variableName, chars: Array(Math.clamp(parseInt(size).notNaN(), 0, WORD_SIZE).valueOf()).fill(0) }
 						variables[variableName] = variable
 						strings.push(variable)
 					}
