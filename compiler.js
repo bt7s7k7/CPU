@@ -3,6 +3,7 @@
 /**
  * @param {CPUState} state
  * @param {string} codeText
+ * @returns {Object<string, number>}
  */
 function compile(state, codeText) {
 	var code = codeText.split("")
@@ -135,4 +136,6 @@ function compile(state, codeText) {
 	ast.forEach((v, i) => {
 		state.memory[i + 1] = v.value
 	})
+
+	return labels
 }

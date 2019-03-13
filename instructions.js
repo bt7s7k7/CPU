@@ -49,7 +49,7 @@ var INS = {
 	set: { code: 31 },
 	inp: { code: 32 },
 	jpa: { code: 33 },
-	cnst: { code: 34 }
+	cnst: { code: 34, args: ["#value", "$address"] }
 }
 
 
