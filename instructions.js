@@ -47,7 +47,8 @@ var INS = {
 	wrt: { code: 29, args: ["$address"] },
 	ldd: { code: 30 },
 	set: { code: 31 },
-	inp: { code: 32 }
+	inp: { code: 32 },
+	jpa: { code: 33 }
 }
 
 
@@ -337,5 +338,16 @@ var controller = [
 			],
 			...resetTick
 		]
-	}
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.jpa.code)],
+		ticks: [
+			[
+				["a", "out"],
+				["pc", "in"]
+			],
+			[["pc", "out"], ["address", "in"]],
+			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
+		]
+	},
 ]

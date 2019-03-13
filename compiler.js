@@ -34,6 +34,7 @@ function compile(state, codeText) {
 		let c = code[i]
 		if (isString) {
 			if (c == "\"") {
+				currString.chars.push(0)
 				isString = false
 			} else {
 				if (c == "\\") {
