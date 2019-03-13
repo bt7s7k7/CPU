@@ -138,8 +138,8 @@ class CPUState {
 			}
 		})
 
-		this.components.memory.value = this.memory[this.getValue("address")]
-		
+
+
 	}
 
 	/**
@@ -179,8 +179,10 @@ class CPUState {
 		if (!this.clockActive) return false
 		this.countdown -= deltaT
 		if (this.countdown < 0) {
-			this.countdown = this.period
-			this.tick()
+			while (this.countdown < 0) {
+				this.countdown += this.period
+				this.tick()
+			}
 			return true
 		}
 		return false
@@ -227,6 +229,10 @@ var componentFunctions = {
 	memory_in: (state, component) => {
 		state.memory[state.getValue("address")] = state.bus
 		component.value = state.bus
+	},
+	memory_out: (state, component) => {
+		component.value = state.memory[state.getValue("address")]
+		state.bus |= component.value
 	},
 	io_out: (state, component) => {
 		component.value = Math.clamp(state.ioIn(), 0, WORD_SIZE)

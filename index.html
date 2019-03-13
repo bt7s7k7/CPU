@@ -86,6 +86,7 @@
 			B.l.save = save
 			state.ioOut = (num) => {
 				E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) + "\n" + E.output.value
+				E.outputText.value += String.fromCharCode(num);
 			}
 			save.files.toArray().forEach(v => {
 				if (typeof v.value[0] == "number") {
@@ -96,6 +97,7 @@
 				state.memory = new Uint8Array(save.files[save.working][0])
 				E.code.value = save.files[save.working][1]
 			}
+			doCode()
 			redraw()
 			drawFiles()
 			window.addEventListener("resize", ()=>redraw())
@@ -173,7 +175,10 @@
 			drawFiles()
 		}
 
-		
+		function doCode() {
+			compile(state, E.code.value);
+			redraw()
+		}
 	</script>
 </head>
 <body style="height: 100vh; margin: 0">
@@ -198,14 +203,19 @@
 				Bus: <span id="busInfo"></span><br />
 				Flags: <span id="flagsInfo"></span><br />
 			</div>
-			<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
 			<div id="files" style="overflow: auto; height: 500px; border: 1px solid black; width: 100%; flex: 1 1"></div>
 			<button style="width: 100%" onclick="saveFile()">Save</button>
 			<button style="width: 100%" onclick="saveFile(true)">Save as new</button>
 		</div>
 		<div style="margin-left: 20px; box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column; flex: 0 1 400px">
-			<textarea style="resize: none; flex: 1 1; margin-bottom: 10px" id="code"></textarea>
-			<button onclick="compile(state, E.code.value); redraw()" style="flex: 0 0 20px; width: 100%">Compile</button>
+			<div style="flex: 1 1; margin-bottom: 10px; position: relative">
+				<textarea style="resize: none; background-color: rgba(0,0,0,0); position: absolute; top: 0px; left: 0px; width: 100%; height: 100%" spellcheck="false" id="code"></textarea>
+			</div>
+			<button onclick="doCode()" style="flex: 0 0 20px; width: 100%">Compile</button>
+		</div>
+		<div style="margin-left: 20px; box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column; flex: 0 1">
+			<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
+			<textarea id="outputText" style="width: 200px; height: 200px; resize: vertical"></textarea>
 		</div>
 	</div>
 </body>

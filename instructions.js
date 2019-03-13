@@ -42,7 +42,11 @@ var INS = {
 	jpz: { code: 24, args: ["$target"] },
 	jnz: { code: 25, args: ["$target"] },
 	jpc: { code: 26, args: ["$target"] },
-	jnc: { code: 27, args: ["$target"] }
+	jnc: { code: 27, args: ["$target"] },
+	rrd: { code: 28, args: ["$address"] },
+	wrt: { code: 29, args: ["$address"] },
+	ldd: { code: 30 },
+	set: { code: 31 }
 }
 
 
@@ -276,5 +280,51 @@ var controller = [
 			...nextValue,
 			...resetTick
 		]
-	}
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.rrd.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["address", "in"]
+			],
+			[["memory", "out"], ["a", "in"]],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.wrt.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["address", "in"]
+			],
+			[["memory", "in"], ["a", "out"]],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.ldd.code)],
+		ticks: [
+			[
+				["b", "out"],
+				["address", "in"]
+			],
+			[["memory", "out"], ["a", "in"]],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.set.code)],
+		ticks: [
+			[
+				["b", "out"],
+				["address", "in"]
+			],
+			[["memory", "in"], ["a", "out"]],
+			...resetTick
+		]
+	},
 ]

@@ -172,10 +172,10 @@ function drawMemory(state, element) {
 		let text = ""
 		if (argCountDown.length > 0) {
 			let arg = argCountDown.splice(0, 1)[0];
-			text += ";  " + arg + " 0x" + value.toString(16) + JSON.stringify(String.fromCharCode(value))
+			text += ";  " + arg
 			if (arg.split("_")[1] == "h") {
 				let low = state.memory[i - 1]
-				text += " = " + (low + (value << 8)) + " 0x" + (low + (value << 8)).toString(16) + JSON.stringify(String.fromCharCode(value))
+				text += "; = " + (low + (value << 8)) + " 0x" + (low + (value << 8)).toString(16) + JSON.stringify(String.fromCharCode(value))
 			}
 		} else {
 			if (value in instructionLookup) {
@@ -184,6 +184,7 @@ function drawMemory(state, element) {
 				argCountDown = instr.args.copy();
 			}
 		}
+		text += "; 0x" + value.toString(16) + JSON.stringify(String.fromCharCode(value))
 		entry.comment.innerText = text
 
 		iii++;

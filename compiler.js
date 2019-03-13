@@ -1,4 +1,4 @@
-// JavaScript source code
+﻿// JavaScript source code
 
 /**
  * @param {CPUState} state
@@ -6,7 +6,7 @@
  */
 function compile(state, codeText) {
 	var code = codeText.split("")
-	/** @type {Array<{value : number, label : string}>} */
+	/** @type {Array<{value : number, label : string, start : number}>} */
 	var ast = []
 	/** @type {string} */
 	var label = null
@@ -34,7 +34,7 @@ function compile(state, codeText) {
 				if (code > WORD_SIZE) {
 					code = 255
 				}
-				ast.push({ value: code, label })
+				ast.push({ value: code, label, start: i })
 				label = null
 			}
 		} else {
@@ -42,6 +42,10 @@ function compile(state, codeText) {
 
 			} else if (c == "\"") {
 				isString = true
+			} else if (c == "/") {
+				let oldI = i
+				i = code.indexOf("/", i + 1)
+				if (i == -1) i = code.length
 			} else {
 				let wordEnd = findTerminator(i)
 				let word = code.slice(i, wordEnd).join("")
@@ -49,19 +53,21 @@ function compile(state, codeText) {
 					if (word[1] == ":") {
 						label = word.substr(2)
 					} else {
-						ast.push({ value: -1, label: word.substr(1) })
+						ast.push({ value: -1, label: word.substr(1), start: i  })
 					}
 				} else {
 					if (word.toLowerCase() in INS) {
 						let ins = INS[word.toLowerCase()]
-						ast.push({ value: ins.code, label: label })
+						ast.push({ value: ins.code, label: label, start: i  })
 						label = null
 					} else {
-						ast.push({ value: Math.clamp(parseInt(word).notNaN(), 0, WORD_SIZE), label: label })
+						var number = parseInt(word)
+						if (isNaN(number)) {
+						} else ast.push({ value: Math.clamp(number.notNaN(), 0, WORD_SIZE), label: label, start: i  })
 						label = null
 					}
 				}
-				i = wordEnd
+				i = wordEnd - 1
 			}
 		}
 
@@ -79,7 +85,9 @@ function compile(state, codeText) {
 		if (v.value < 0 && v.label) {
 			if (v.label in labels) {
 				v.value = labels[v.label]
-			} else throw new RangeError("Label '" + v.label + "' is not defined")
+			} else {
+				
+			}
 		}
 	})
 
