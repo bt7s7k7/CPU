@@ -2,45 +2,52 @@
  *  @typedef {{code : number, args : string[], name : string}} InstructionDef
  *  */
 var INS = {
-	nop: { code: 0, args: [] },
-	jmp: { code: 1, args: ["$target"] },
-	hlt: { code: 2 },
-	cout: { code: 3, args: ["#value"] },
-	aout: { code: 4 },
-	atb: { code: 5 },
-	bta: { code: 6 },
-	atx: { code: 7 },
-	aty: { code: 8 },
-	xta: { code: 9 },
-	yta: { code: 10 },
-	btx: { code: 11 },
-	bty: { code: 12 },
-	xtb: { code: 13 },
-	ytb: { code: 14 },
-	xty: { code: 15 },
-	ytx: { code: 16 },
-	loa: { code: 17, args: ["#value"] },
-	lob: { code: 18, args: ["#value"] },
-	lox: { code: 19, args: ["#value"] },
-	loy: { code: 20, args: ["#value"] },
-	sum: { code: 21 },
-	add: { code: 22, args: ["#value"] },
-	rsb: { code: 23 },
-	jpz: { code: 24, args: ["$target"] },
-	jnz: { code: 25, args: ["$target"] },
-	jpc: { code: 26, args: ["$target"] },
-	jnc: { code: 27, args: ["$target"] },
-	rrd: { code: 28, args: ["$address"] },
-	wrt: { code: 29, args: ["$address"] },
-	ldd: { code: 30 },
-	set: { code: 31 },
-	inp: { code: 32 },
-	jpa: { code: 33 },
-	cnst: { code: 34, args: ["#value", "$address"] },
-	mov: { code: 35, args: ["$source", "$target"] },
-	sub: { code: 36 },
-	rem: { code: 37, args: ["#value"] },
-	iot: { code: 38, args: ["#type"] }
+	nop: { code: 0, args: [] },                        // Does nothing
+	jmp: { code: 1, args: ["$target"] },               // Jumps to $target
+	hlt: { code: 2 },                                  // Stop clock
+											           
+	cout: { code: 3, args: ["#value"] },               // Outputs #value
+	aout: { code: 4 },                                 // Outputs A
+	inp: { code: 32 },                                 // Inputs A
+	iot: { code: 38, args: ["#target"] },              // Changes I/O target to #target
+											           
+	atb: { code: 5 },						           // \ 
+	bta: { code: 6 },						           //  |
+	atx: { code: 7 },						           //  |
+	aty: { code: 8 },						           //  |
+	xta: { code: 9 },						           //  |
+	yta: { code: 10 },						           //   > Move [] to []
+	btx: { code: 11 },						           //  |
+	bty: { code: 12 },						           //  |
+	xtb: { code: 13 },						           //  |
+	ytb: { code: 14 },						           //  |
+	xty: { code: 15 },						           //  |
+	ytx: { code: 16 },						           // /
+											           
+	loa: { code: 17, args: ["#value"] },               // Sets A to #value
+	lob: { code: 18, args: ["#value"] },	           // Sets B to #value
+	lox: { code: 19, args: ["#value"] },	           // Sets X to #value
+	loy: { code: 20, args: ["#value"] },	           // Sets Y to #value
+	rsb: { code: 23 },						           // Sets B to 0
+											           
+	sum: { code: 21 },						           // A = A + B
+	sub: { code: 36 },						           // A = A - B
+	add: { code: 22, args: ["#value"] },	           // A += #value
+	rem: { code: 37, args: ["#value"] },	           // A -= #value
+											           
+	jpz: { code: 24, args: ["$target"] },	           // Jumps to $target if zero
+	jnz: { code: 25, args: ["$target"] },	           // Jumps to $target if not zero
+	jpc: { code: 26, args: ["$target"] },	           // Jumps to $target if carry
+	jnc: { code: 27, args: ["$target"] },	           // Jumps to $target if not carry
+	jpa: { code: 33 },						           // Jumps to A
+											           
+	rrd: { code: 28, args: ["$address"] },             // A = *$address
+	wrt: { code: 29, args: ["$address"] },             // *$address = A
+	ldd: { code: 30 },						           // A = *B
+	set: { code: 31 },						           // A = *B
+	cnst: { code: 34, args: ["#value", "$address"] },  // *$addresss = #value
+	mov: { code: 35, args: ["$source", "$target"] },   // *$target = *$source
+
 }
 
 
