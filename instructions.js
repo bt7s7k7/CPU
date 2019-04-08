@@ -2,24 +2,11 @@
  *  @typedef {{code : number, args : string[], name : string}} InstructionDef
  *  */
 var INS = {
-	nop: {
-		code: 0,
-		args: []
-	},
-	jmp: {
-		code: 1,
-		args: ["$target"]
-	},
-	hlt: {
-		code: 2
-	},
-	cout: {
-		code: 3,
-		args: ["#value"]
-	},
-	aout: {
-		code: 4
-	},
+	nop: { code: 0, args: [] },
+	jmp: { code: 1, args: ["$target"] },
+	hlt: { code: 2 },
+	cout: { code: 3, args: ["#value"] },
+	aout: { code: 4 },
 	atb: { code: 5 },
 	bta: { code: 6 },
 	atx: { code: 7 },
@@ -52,7 +39,8 @@ var INS = {
 	cnst: { code: 34, args: ["#value", "$address"] },
 	mov: { code: 35, args: ["$source", "$target"] },
 	sub: { code: 36 },
-	rem: { code: 37, args: ["#value"]}
+	rem: { code: 37, args: ["#value"] },
+	iot: { code: 38, args: ["#type"] }
 }
 
 
@@ -402,4 +390,15 @@ var controller = [
 			...resetTick
 		]
 	},
+	{
+		criteria: [valueCriteria("instruction", INS.iot.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["ioTarget", "in"]
+			],
+			...resetTick
+		]
+	}
 ]

@@ -1,5 +1,3 @@
-const WORD_SIZE = 1 << 8
-
 /**
  *  @typedef {{in : boolean, out : boolean, reset : boolean, incr : boolean, value : number}} Component
  *  @returns {Object<string, Component>} 
@@ -35,6 +33,10 @@ function makeComponents() {
 			value: 0,
 			in: false,
 			out: false
+		},
+		ioTarget: {
+			value: 0,
+			in: false
 		},
 		a: {
 			value: 0,
@@ -75,10 +77,8 @@ class CPUState {
 		this.period = 100
 		this.clockActive = false
 		this.countdown = 0
-		/** @param {number} value */
-		this.ioOut = (value) => { }
-		/** @returns {number} */
-		this.ioIn = () => 0
+		/** @type {Object<number, {in: ()=>number, out: (number)=>void}>} */
+		this.io = {}
 		this.fCarry = false
 		this.fZero = false
 	}
@@ -202,6 +202,22 @@ class CPUState {
 
 		this.fCarry = this.fZero = false
 	}
+
+	/**
+	 * @returns {number}
+	 * */
+	_ioIn() {
+		if (!(this.getValue("ioTarget") in this.io)) return 0
+		return Math.clamp((this.io[this.getValue("ioTarget")].in || (()=>0))(), 0, WORD_SIZE).notNaN()
+	}
+
+	/**
+	 * @param {number} number
+	 */
+	_ioOut(number) {
+		if (!(this.getValue("ioTarget") in this.io)) return 
+		(this.io[this.getValue("ioTarget")].out || (() => 0))(number)
+	}
 }
 
 var componentNames = {
@@ -227,7 +243,8 @@ var componentNames = {
 	x: "X Register",
 	y: "Y Register",
 	sum: "Adder",
-	sub: "Substractor"
+	sub: "Substractor",
+	ioTarget: "I/O Target"
 }
 
 /** @type {Object<string, (state : CPUState, component : Component)=>void>} */
@@ -241,12 +258,12 @@ var componentFunctions = {
 		state.bus |= component.value
 	},
 	io_out: (state, component) => {
-		component.value = Math.clamp(state.ioIn(), 0, WORD_SIZE)
+		component.value = Math.clamp(state._ioIn(), 0, WORD_SIZE)
 		state.bus |= component.value
 	},
 	io_in: (state, component) => {
 		component.value = state.bus
-		state.ioOut(component.value)
+		state._ioOut(component.value)
 	},
 	sum_out: (state, component) => {
 		var value = state.getValue("a") + state.getValue("b")

@@ -3,6 +3,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
+	<script>const WORD_SIZE = 1 << 8</script>
 	<script src="./stuff/bUtils.js"></script>
 	<script src="./stuff/bUtilsBrowser.js"></script>
 	<script src="./CPUState.js"></script>
@@ -87,19 +88,26 @@
 				Object.assign(save, B.l.save)
 			}
 			B.l.save = save
-			state.ioOut = (num) => {
-				E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) + "\n" + E.output.value
-				E.outputText.value += String.fromCharCode(num);
+			state.io[0] = {
+				out: (num) => {
+					E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) + "\n" + E.output.value
+				}
 			}
-			state.ioIn = () => {
-				if (E.input.value.length > 0) {
-					var char = E.input.value.charCodeAt(0)
-					E.input.value = E.input.value.substr(1)
+			state.io[1] = {
+				out: (num) => {
+					E.outputText.value += String.fromCharCode(num);
+				},
+				in: () => {
+					if (E.input.value.length > 0) {
+						var char = E.input.value.charCodeAt(0)
+						E.input.value = E.input.value.substr(1)
 
-					if (char > WORD_SIZE) char = 255
-					return char
-				} else return 0
+						if (char > WORD_SIZE) char = 255
+						return char
+					} else return 0
+				}
 			}
+
 			save.files.toArray().forEach(v => {
 				if (typeof v.value[0] == "number") {
 					save.files[v.key] = [v.value, ""]
