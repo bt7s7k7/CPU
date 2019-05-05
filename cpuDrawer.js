@@ -99,13 +99,13 @@ var memoryElements = null
  */
 function drawMemory(state, element) {
 	if (!debugDatabase) debugDatabase = { points: {}, values: {}, codeEnd: Infinity }
-	var linesFit = state.memory.length//Math.floor((E.memoryView.getSize()[1]) / 20)
-	var beginLine = 0//parseInt(E.memoryScroll.value);
+	var linesFit = state.memory.length
+	var beginLine = 0
 	var endLine = Math.clamp(beginLine + linesFit, 0, state.memory.length)
 	var argCountDown = []
 	if (memoryElements && linesFit != memoryElements.length) memoryElements = null
 	if (memoryElements == null) {
-		B.removeChildrenOf(E.memoryView)
+		B.removeChildrenOf(element)
 		memoryElements = []
 		for (var i = beginLine; i < endLine; i++) {
 			let entry = {}
