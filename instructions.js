@@ -2,69 +2,70 @@
  *  @typedef {{code : number, args : string[], name : string}} InstructionDef
  *  */
 var INS = {
-	// -- Basic flow controll --
-	nop: { code: 0, args: [] },                        // Does nothing
-	jmp: { code: 1, args: ["$target"] },               // Jumps to $target
-	hlt: { code: 2 },                                  // Stop clock
+    // -- Basic flow controll --
+    nop: { code: 0, args: [] },                           // Does nothing
+    jmp: { code: 1, args: ["$target"] },                  // Jumps to $target
+    hlt: { code: 2 },                                     // Stop clock
+													     
+    // -- I/O --									         
+    cout: { code: 3, args: ["#value"] },                  // Outputs #value
+    aout: { code: 4 },                                    // Outputs A
+    inp: { code: 32 },                                    // Inputs A
+    iot: { code: 38, args: ["#target"] },                 // Changes I/O target to #target
 
-	// -- I/O --
-	cout: { code: 3, args: ["#value"] },               // Outputs #value
-	aout: { code: 4 },                                 // Outputs A
-	inp: { code: 32 },                                 // Inputs A
-	iot: { code: 38, args: ["#target"] },              // Changes I/O target to #target
+    // -- Registers --
+    atb: { code: 5 },                                     // \ 
+    bta: { code: 6 },                                     //  |
+    atx: { code: 7 },                                     //  |
+    aty: { code: 8 },                                     //  |
+    xta: { code: 9 },                                     //  |
+    yta: { code: 10 },                                    //   > Move [] to []
+    btx: { code: 11 },                                    //  |
+    bty: { code: 12 },                                    //  |
+    xtb: { code: 13 },                                    //  |
+    ytb: { code: 14 },                                    //  |
+    xty: { code: 15 },                                    //  |
+    ytx: { code: 16 },                                    // /
+														  
+    loa: { code: 17, args: ["#value"] },                  // Sets A to #value
+    lob: { code: 18, args: ["#value"] },                  // Sets B to #value
+    lox: { code: 19, args: ["#value"] },                  // Sets X to #value
+    loy: { code: 20, args: ["#value"] },                  // Sets Y to #value
+    rsb: { code: 23 },                                    // Sets B to 0
 
-	// -- Registers --
-	atb: { code: 5 },						           // \ 
-	bta: { code: 6 },						           //  |
-	atx: { code: 7 },						           //  |
-	aty: { code: 8 },						           //  |
-	xta: { code: 9 },						           //  |
-	yta: { code: 10 },						           //   > Move [] to []
-	btx: { code: 11 },						           //  |
-	bty: { code: 12 },						           //  |
-	xtb: { code: 13 },						           //  |
-	ytb: { code: 14 },						           //  |
-	xty: { code: 15 },						           //  |
-	ytx: { code: 16 },						           // /
+    // -- Artihmetic --
+    sum: { code: 21 },                                    // A = A + B
+    sub: { code: 36 },                                    // A = A - B
+    add: { code: 22, args: ["#value"] },                  // A += #value
+    rem: { code: 37, args: ["#value"] },                  // A -= #value
 
-	loa: { code: 17, args: ["#value"] },               // Sets A to #value
-	lob: { code: 18, args: ["#value"] },	           // Sets B to #value
-	lox: { code: 19, args: ["#value"] },	           // Sets X to #value
-	loy: { code: 20, args: ["#value"] },	           // Sets Y to #value
-	rsb: { code: 23 },						           // Sets B to 0
+    // -- Conditional flow controll --
+    jpz: { code: 24, args: ["$target"] },                 // Jumps to $target if zero
+    jnz: { code: 25, args: ["$target"] },                 // Jumps to $target if not zero
+    jpc: { code: 26, args: ["$target"] },                 // Jumps to $target if carry
+    jnc: { code: 27, args: ["$target"] },                 // Jumps to $target if not carry
+    jpa: { code: 33 },                                    // Jumps to A
 
-	// -- Artihmetic --
-	sum: { code: 21 },						           // A = A + B
-	sub: { code: 36 },						           // A = A - B
-	add: { code: 22, args: ["#value"] },	           // A += #value
-	rem: { code: 37, args: ["#value"] },	           // A -= #value
+    // -- Memory --
+    movma: { code: 28, args: ["$address"] },              // A = *$address
+    movam: { code: 29, args: ["$address"] },              // *$address = A
+    movpa: { code: 30 },                                  // A = *B
+    movap: { code: 31 },                                  // *B = A
+    movcm: { code: 34, args: ["#value", "$address"] },    // *$addresss = #value
+    movmm: { code: 35, args: ["$source", "$target"] },    // *$target = *$source
 
-	// -- Conditional flow controll --
-	jpz: { code: 24, args: ["$target"] },	           // Jumps to $target if zero
-	jnz: { code: 25, args: ["$target"] },	           // Jumps to $target if not zero
-	jpc: { code: 26, args: ["$target"] },	           // Jumps to $target if carry
-	jnc: { code: 27, args: ["$target"] },	           // Jumps to $target if not carry
-	jpa: { code: 33 },						           // Jumps to A
+    // -- Stack --
+    movsx: { code: 39, args: ["$offset"] },               // X = *(stackPtr - $offset)
+    movxs: { code: 40, args: ["$offset"] },               // *(stackPtr - $offset) = X
+    pushc: { code: 41, args: ["#value"] },                // *(--stackPtr) = #value
+    pushx: { code: 42 },                                  // *(--stackPtr) = X
+    pusha: { code: 47 },                                  // *(--stackPtr) = A
+    pop: { code: 43 },                                    // stackPtr++
+    popx: { code: 46 },                                   // X = *(stackPtr++)
 
-	// -- Memory --
-	movma: { code: 28, args: ["$address"] },           // A = *$address
-	movam: { code: 29, args: ["$address"] },           // *$address = A
-	movpa: { code: 30 },						       // A = *B
-	movap: { code: 31 },						       // *B = A
-	movcm: { code: 34, args: ["#value", "$address"] }, // *$addresss = #value
-	movmm: { code: 35, args: ["$source", "$target"] }, // *$target = *$source
-
-	// -- Stack --
-	movsx: { code: 39, args: ["$offset"] },			   // X = *(stackPtr - $offset)
-	movxs: { code: 40, args: ["$offset"] },			   // *(stackPtr - $offset) = X
-	pushc: { code: 41, args: ["#value"] },			   // *(--stackPtr) = #value
-	pushx: { code: 42 },			   // *(--stackPtr) = X
-	pop: { code: 43 },								   // stackPtr++
-	popx: {code: 46},								   // X = *(stackPtr++)
-
-	// -- Functional -- 
-	call: { code: 44, args: ["$func"] },
-	ret: { code: 45 }
+    // -- Functional -- 
+    call: { code: 44, args: ["$func"] },
+    ret: { code: 45 }
 
 }
 
@@ -506,6 +507,36 @@ var controller = [
 	{
 		criteria: [valueCriteria("instruction", INS.pushx.code)],
 		ticks: [
+			[
+				["stackPtr", "out"],
+				["a", "in"]
+			],
+			[
+				["_", 1],
+				["b", "in"]
+			],
+			[
+				["sub", "out"],
+				["stackPtr", "in"]
+			],
+			[
+				["stackPtr", "out"],
+				["address", "in"]
+			],
+			[
+				["x", "out"],
+				["memory", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.pusha.code)],
+		ticks: [
+			[
+				["a", "out"],
+				["x", "in"]
+			],
 			[
 				["stackPtr", "out"],
 				["a", "in"]
