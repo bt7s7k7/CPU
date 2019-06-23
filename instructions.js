@@ -58,7 +58,7 @@ var INS = {
 	movsx: { code: 39, args: ["$offset"] },			   // X = *(stackPtr - $offset)
 	movxs: { code: 40, args: ["$offset"] },			   // *(stackPtr - $offset) = X
 	pushc: { code: 41, args: ["#value"] },			   // *(--stackPtr) = #value
-	pushx: { code: 42, args: ["#value"] },			   // *(--stackPtr) = X
+	pushx: { code: 42 },			   // *(--stackPtr) = X
 	pop: { code: 43 },								   // X = *(stackPtr++)
 
 	// -- Functional -- 
