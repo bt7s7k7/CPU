@@ -59,7 +59,8 @@ var INS = {
 	movxs: { code: 40, args: ["$offset"] },			   // *(stackPtr - $offset) = X
 	pushc: { code: 41, args: ["#value"] },			   // *(--stackPtr) = #value
 	pushx: { code: 42 },			   // *(--stackPtr) = X
-	pop: { code: 43 },								   // X = *(stackPtr++)
+	pop: { code: 43 },								   // stackPtr++
+	popx: {code: 44},								   // X = *(stackPtr++)
 
 	// -- Functional -- 
 	call: { code: 44, args: ["$func"] },
@@ -529,7 +530,7 @@ var controller = [
 		]
 	},
 	{
-		criteria: [valueCriteria("instruction", INS.pop.code)],
+		criteria: [valueCriteria("instruction", INS.popx.code)],
 		ticks: [
 			[
 				["stackPtr", "out"],
@@ -539,6 +540,24 @@ var controller = [
 				["x", "in"],
 				["memory", "out"]
 			],
+			[
+				["stackPtr", "out"],
+				["a", "in"]
+			],
+			[
+				["_", 1],
+				["b", "in"]
+			],
+			[
+				["sum", "out"],
+				["stackPtr", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.pop.code)],
+		ticks: [
 			[
 				["stackPtr", "out"],
 				["a", "in"]
