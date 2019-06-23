@@ -58,6 +58,11 @@ function makeComponents() {
 			in: false,
 			out: false
 		},
+		stackPtr: {
+			value: 0,
+			in: false,
+			out: false
+		},
 		sum: {
 			value: 0,
 			out: false
@@ -117,7 +122,11 @@ class CPUState {
 			if (match) {
 				if (v.ticks.length > tick) {
 					//console.log("Executing " + ii, v, " tick:", tick, v.ticks[tick])
-					v.ticks[tick].forEach(v => this.signal(v[0], v[1]))
+					v.ticks[tick].forEach(v => {
+						if (v[0] == "_") {
+							this.bus |= v[1]
+						} else this.signal(v[0], v[1])
+					})
 				}
 			}
 		})
@@ -208,14 +217,14 @@ class CPUState {
 	 * */
 	_ioIn() {
 		if (!(this.getValue("ioTarget") in this.io)) return 0
-		return Math.clamp((this.io[this.getValue("ioTarget")].in || (()=>0))(), 0, WORD_SIZE).notNaN()
+		return Math.clamp((this.io[this.getValue("ioTarget")].in || (() => 0))(), 0, WORD_SIZE).notNaN()
 	}
 
 	/**
 	 * @param {number} number
 	 */
 	_ioOut(number) {
-		if (!(this.getValue("ioTarget") in this.io)) return 
+		if (!(this.getValue("ioTarget") in this.io)) return
 		(this.io[this.getValue("ioTarget")].out || (() => 0))(number)
 	}
 }
@@ -244,7 +253,8 @@ var componentNames = {
 	y: "Y Register",
 	sum: "Adder",
 	sub: "Substractor",
-	ioTarget: "I/O Target"
+	ioTarget: "I/O Target",
+	stackPtr: "Stack Pointer",
 }
 
 /** @type {Object<string, (state : CPUState, component : Component)=>void>} */

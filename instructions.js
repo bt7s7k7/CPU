@@ -2,15 +2,18 @@
  *  @typedef {{code : number, args : string[], name : string}} InstructionDef
  *  */
 var INS = {
+	// -- Basic flow controll --
 	nop: { code: 0, args: [] },                        // Does nothing
 	jmp: { code: 1, args: ["$target"] },               // Jumps to $target
 	hlt: { code: 2 },                                  // Stop clock
-											           
+
+	// -- I/O --
 	cout: { code: 3, args: ["#value"] },               // Outputs #value
 	aout: { code: 4 },                                 // Outputs A
 	inp: { code: 32 },                                 // Inputs A
 	iot: { code: 38, args: ["#target"] },              // Changes I/O target to #target
-											           
+
+	// -- Registers --
 	atb: { code: 5 },						           // \ 
 	bta: { code: 6 },						           //  |
 	atx: { code: 7 },						           //  |
@@ -23,31 +26,40 @@ var INS = {
 	ytb: { code: 14 },						           //  |
 	xty: { code: 15 },						           //  |
 	ytx: { code: 16 },						           // /
-											           
+
 	loa: { code: 17, args: ["#value"] },               // Sets A to #value
 	lob: { code: 18, args: ["#value"] },	           // Sets B to #value
 	lox: { code: 19, args: ["#value"] },	           // Sets X to #value
 	loy: { code: 20, args: ["#value"] },	           // Sets Y to #value
 	rsb: { code: 23 },						           // Sets B to 0
-											           
+
+	// -- Artihmetic --
 	sum: { code: 21 },						           // A = A + B
 	sub: { code: 36 },						           // A = A - B
 	add: { code: 22, args: ["#value"] },	           // A += #value
 	rem: { code: 37, args: ["#value"] },	           // A -= #value
-											           
+
+	// -- Conditional flow controll --
 	jpz: { code: 24, args: ["$target"] },	           // Jumps to $target if zero
 	jnz: { code: 25, args: ["$target"] },	           // Jumps to $target if not zero
 	jpc: { code: 26, args: ["$target"] },	           // Jumps to $target if carry
 	jnc: { code: 27, args: ["$target"] },	           // Jumps to $target if not carry
 	jpa: { code: 33 },						           // Jumps to A
-											           
-	rrd: { code: 28, args: ["$address"] },             // A = *$address
-	wrt: { code: 29, args: ["$address"] },             // *$address = A
-	ldd: { code: 30 },						           // A = *B
-	set: { code: 31 },						           // A = *B
-	cnst: { code: 34, args: ["#value", "$address"] },  // *$addresss = #value
-	mov: { code: 35, args: ["$source", "$target"] },   // *$target = *$source
 
+	// -- Memory --
+	movma: { code: 28, args: ["$address"] },           // A = *$address
+	movam: { code: 29, args: ["$address"] },           // *$address = A
+	movpa: { code: 30 },						       // A = *B
+	movap: { code: 31 },						       // *B = A
+	movcm: { code: 34, args: ["#value", "$address"] }, // *$addresss = #value
+	movmm: { code: 35, args: ["$source", "$target"] }, // *$target = *$source
+
+	// -- Stack --
+	movsx: { code: 39, args: ["$offset"] },			   // X = *(stackPtr - $offset)
+	movxs: { code: 40, args: ["$offset"] },			   // *(stackPtr - $offset) = X
+	pushc: { code: 41, args: ["#value"] },			   // *(--stackPtr) = #value
+	pushx: { code: 42, args: ["#value"] },			   // *(--stackPtr) = X
+	pop: { code: 43 },								   // X = *(stackPtr++)
 }
 
 
@@ -283,7 +295,7 @@ var controller = [
 		]
 	},
 	{
-		criteria: [valueCriteria("instruction", INS.rrd.code)],
+		criteria: [valueCriteria("instruction", INS.movma.code)],
 		ticks: [
 			...nextValue,
 			[
@@ -295,7 +307,7 @@ var controller = [
 		]
 	},
 	{
-		criteria: [valueCriteria("instruction", INS.wrt.code)],
+		criteria: [valueCriteria("instruction", INS.movam.code)],
 		ticks: [
 			...nextValue,
 			[
@@ -307,7 +319,7 @@ var controller = [
 		]
 	},
 	{
-		criteria: [valueCriteria("instruction", INS.ldd.code)],
+		criteria: [valueCriteria("instruction", INS.movpa.code)],
 		ticks: [
 			[
 				["b", "out"],
@@ -318,7 +330,7 @@ var controller = [
 		]
 	},
 	{
-		criteria: [valueCriteria("instruction", INS.set.code)],
+		criteria: [valueCriteria("instruction", INS.movap.code)],
 		ticks: [
 			[
 				["b", "out"],
@@ -350,7 +362,7 @@ var controller = [
 		]
 	},
 	{
-		criteria: [valueCriteria("instruction", INS.cnst.code)],
+		criteria: [valueCriteria("instruction", INS.movcm.code)],
 		ticks: [
 			...nextValue,
 			[
@@ -367,7 +379,7 @@ var controller = [
 		]
 	},
 	{
-		criteria: [valueCriteria("instruction", INS.mov.code)],
+		criteria: [valueCriteria("instruction", INS.movmm.code)],
 		ticks: [
 			...nextValue,
 			[["memory", "out"], ["address", "in"]],
@@ -404,6 +416,137 @@ var controller = [
 			[
 				["memory", "out"],
 				["ioTarget", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.movsx.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["b", "in"]
+			],
+			[
+				["stackPtr", "out"],
+				["a", "in"]
+			],
+			[
+				["sub", "out"],
+				["address", "in"]
+			],
+			[
+				["memory", "out"],
+				["x", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.movxs.code)],
+		ticks: [
+			...nextValue,
+			[
+				["memory", "out"],
+				["b", "in"]
+			],
+			[
+				["stackPtr", "out"],
+				["a", "in"]
+			],
+			[
+				["sub", "out"],
+				["address", "in"]
+			],
+			[
+				["memory", "in"],
+				["x", "out"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.pushc.code)],
+		ticks: [
+			...nextValue,
+			[
+				["stackPtr", "out"],
+				["a", "in"]
+			],
+			[
+				["_", 1],
+				["b", "in"]
+			],
+			[
+				["sub", "out"],
+				["stackPtr", "in"]
+			],
+			[
+				["memory", "out"],
+				["a", "in"]
+			],
+			[
+				["stackPtr", "out"],
+				["address", "in"]
+			],
+			[
+				["a", "out"],
+				["memory", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.pushx.code)],
+		ticks: [
+			...nextValue,
+			[
+				["stackPtr", "out"],
+				["a", "in"]
+			],
+			[
+				["_", 1],
+				["b", "in"]
+			],
+			[
+				["sub", "out"],
+				["stackPtr", "in"]
+			],
+			[
+				["stackPtr", "out"],
+				["address", "in"]
+			],
+			[
+				["x", "out"],
+				["memory", "in"]
+			],
+			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.pop.code)],
+		ticks: [
+			...nextValue,
+			[
+				["stackPtr", "out"],
+				["address", "in"]
+			],
+			[
+				["x", "in"],
+				["memory", "out"]
+			],
+			[
+				["stackPtr", "out"],
+				["a", "in"]
+			],
+			[
+				["_", 1],
+				["b", "in"]
+			],
+			[
+				["sum", "out"],
+				["stackPtr", "in"]
 			],
 			...resetTick
 		]

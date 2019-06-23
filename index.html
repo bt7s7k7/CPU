@@ -46,19 +46,34 @@
 			B.l.save = save
 			state.io[0] = {
 				out: (num) => {
-					E.output.value = num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) + "\n" + E.output.value
+					E.outputText.value += num.toString(2).fillZeroPrefix(8).split("").map(v => v == "1" ? "█" : "-").join("") + " " + num.toString() + JSON.stringify(String.fromCharCode(num)) + "\n"
+				},
+				in: () => {
+					var buffer = ""
+					while (E.input.value.length > 0 && E.input.value[0] != ",") {
+						buffer += E.input.value[0]
+						E.input.value = E.input.value.substr(1)
+					}
+					E.input.value = E.input.value.substr(1)
+					var ret = parseInt(buffer).notNaN()
+					while (ret < 0) {
+						ret = WORD_SIZE - 1 - ret
+					}
+					if (ret >= WORD_SIZE) ret = WORD_SIZE - 1
+					return ret;
 				}
 			}
 			state.io[1] = {
 				out: (num) => {
-					E.outputText.value += String.fromCharCode(num);
+					if (num == 255) E.outputText.value = ""
+					else E.outputText.value += String.fromCharCode(num);
 				},
 				in: () => {
 					if (E.input.value.length > 0) {
 						var char = E.input.value.charCodeAt(0)
 						E.input.value = E.input.value.substr(1)
 
-						if (char > WORD_SIZE) char = 255
+						if (char >= WORD_SIZE) char = WORD_SIZE - 1
 						return char
 					} else return 0
 				}
@@ -172,8 +187,8 @@
 				<button onclick="state.tick(); redraw()">&rarr;</button>
 				<button onclick="state.clockActive = true">S</button>
 				<button onclick="state.clockActive = false">C</button>
-				<button onclick="state.reset(); E.output.value = ''; E.outputText.value = ''; redraw()">R</button>
-				<button onclick="state.reset(); E.output.value = ''; E.outputText.value = ''; state.memory.fill(0); redraw()">RR</button>
+				<button onclick="state.reset(); E.outputText.value = ''; redraw()">R</button>
+				<button onclick="state.reset(); E.outputText.value = ''; state.memory.fill(0); redraw()">RR</button>
 				<input type="number" style="width: 40px" onchange="state.period = Math.clamp(parseFloat(this.value).notNaN(), 0.01, Infinity)" value="100" />
 			</div>
 			<div>
@@ -191,9 +206,10 @@
 			<button onclick="doCode()" style="flex: 0 0 20px; width: 100%">Compile</button>
 		</div>
 		<div style="margin-left: 20px; box-shadow: 0 0 10px grey; padding: 10px; display: flex; flex-direction: column; flex: 0 1">
-			<textarea id="output" style="width: 200px; height: 200px; resize: vertical"></textarea>
+			I/O t==0 ? Formated number; t==1 Characters <br />
 			<textarea id="outputText" style="width: 200px; height: 200px; resize: vertical"></textarea>
 			<input style="flex: 0 0 20px; width: 100%" id="input" />
+			<a href="https://github.com/bt7s7k7/CPU">Source and help</a>
 		</div>
 	</div>
 </body>
