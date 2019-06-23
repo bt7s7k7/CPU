@@ -439,7 +439,7 @@ var controller = [
 				["a", "in"]
 			],
 			[
-				["sub", "out"],
+				["sum", "out"],
 				["address", "in"]
 			],
 			[
@@ -462,7 +462,7 @@ var controller = [
 				["a", "in"]
 			],
 			[
-				["sub", "out"],
+				["sum", "out"],
 				["address", "in"]
 			],
 			[
