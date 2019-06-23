@@ -60,7 +60,7 @@ var INS = {
 	pushc: { code: 41, args: ["#value"] },			   // *(--stackPtr) = #value
 	pushx: { code: 42 },			   // *(--stackPtr) = X
 	pop: { code: 43 },								   // stackPtr++
-	popx: {code: 44},								   // X = *(stackPtr++)
+	popx: {code: 46},								   // X = *(stackPtr++)
 
 	// -- Functional -- 
 	call: { code: 44, args: ["$func"] },
