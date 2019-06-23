@@ -60,6 +60,11 @@ var INS = {
 	pushc: { code: 41, args: ["#value"] },			   // *(--stackPtr) = #value
 	pushx: { code: 42, args: ["#value"] },			   // *(--stackPtr) = X
 	pop: { code: 43 },								   // X = *(stackPtr++)
+
+	// -- Functional -- 
+	call: { code: 44, args: ["$func"] },
+	ret: { code: 45 }
+
 }
 
 
@@ -500,7 +505,6 @@ var controller = [
 	{
 		criteria: [valueCriteria("instruction", INS.pushx.code)],
 		ticks: [
-			...nextValue,
 			[
 				["stackPtr", "out"],
 				["a", "in"]
@@ -527,7 +531,6 @@ var controller = [
 	{
 		criteria: [valueCriteria("instruction", INS.pop.code)],
 		ticks: [
-			...nextValue,
 			[
 				["stackPtr", "out"],
 				["address", "in"]
@@ -549,6 +552,67 @@ var controller = [
 				["stackPtr", "in"]
 			],
 			...resetTick
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.call.code)],
+		ticks: [
+			[
+				["stackPtr", "out"],
+				["a", "in"]
+			],
+			[
+				["_", 1],
+				["b", "in"]
+			],
+			[
+				["sub", "out"],
+				["stackPtr", "in"]
+			],
+			[
+				["stackPtr", "out"],
+				["address", "in"]
+			],
+			[
+				["pc", "out"],
+				["memory", "in"]
+			],
+			...nextValue,
+			[
+				["memory", "out"],
+				["pc", "in"]
+			],
+			[["pc", "out"], ["address", "in"]],
+			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
+		]
+	},
+	{
+		criteria: [valueCriteria("instruction", INS.ret.code)],
+		ticks: [
+			[
+				["stackPtr", "out"],
+				["address", "in"]
+			],
+			[
+				["pc", "in"],
+				["memory", "out"]
+			],
+			[
+				["stackPtr", "out"],
+				["a", "in"],
+				["pc", "incr"]
+			],
+			[
+				["_", 1],
+				["b", "in"],
+				["pc", "incr"]
+			],
+			[
+				["sum", "out"],
+				["stackPtr", "in"]
+			],
+			[["pc", "out"], ["address", "in"]],
+			[["memory", "out"], ["instruction", "in"], ["tick", "reset"]]
 		]
 	}
 ]

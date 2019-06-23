@@ -123,9 +123,7 @@ class CPUState {
 				if (v.ticks.length > tick) {
 					//console.log("Executing " + ii, v, " tick:", tick, v.ticks[tick])
 					v.ticks[tick].forEach(v => {
-						if (v[0] == "_") {
-							this.bus |= v[1]
-						} else this.signal(v[0], v[1])
+						this.signal(v[0], v[1])
 					})
 				}
 			}
@@ -178,7 +176,7 @@ class CPUState {
 		} else if (component == "_") {
 			if (signal == "halt") {
 				this.clockActive = false
-			}
+			} else this.bus |= signal
 		} else {
 			throw new RangeError("Component named '" + component + "' is not in the CPU")
 		}
